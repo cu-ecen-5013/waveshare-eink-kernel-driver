@@ -28,6 +28,25 @@
 #define EPD1IN54_H
 
 #include "epdif.h"
+#include <linux/gpio.h>                 // Required for the GPIO functions
+#include <linux/interrupt.h>            // Required for the IRQ code
+#include <linux/spi/spi.h>
+#include <linux/printk.h>
+
+#define AESD_DEBUG 1  //Remove comment on this line to enable debug
+
+#undef PDEBUG             /* undef it, just in case */
+#ifdef AESD_DEBUG
+#  ifdef __KERNEL__
+     /* This one if debugging is on, and kernel space */
+#    define PDEBUG(fmt, args...) printk( KERN_DEBUG "aesdchar: " fmt, ## args)
+#  else
+     /* This one for user space */
+#    define PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
+#  endif
+#else
+#  define PDEBUG(fmt, args...) /* not debugging: nothing */
+#endif
 
 // Display resolution
 #define EPD_WIDTH       200
@@ -59,41 +78,37 @@
 extern const unsigned char lut_full_update[];
 extern const unsigned char lut_partial_update[];
 
-class Epd : EpdIf {
-public:
-    unsigned long width;
-    unsigned long height;
 
-    Epd();
-    ~Epd();
-    int  Init(const unsigned char* lut);
-    void SendCommand(unsigned char command);
-    void SendData(unsigned char data);
-    void WaitUntilIdle(void);
-    void Reset(void);
-    void SetFrameMemory(
-        const unsigned char* image_buffer,
-        int x,
-        int y,
-        int image_width,
-        int image_height
-    );
-    void SetFrameMemory(const unsigned char* image_buffer);
-    void ClearFrameMemory(unsigned char color);
-    void DisplayFrame(void);
-    void Sleep(void);
+extern unsigned long width;
+extern unsigned long height;
 
-private:
-    unsigned int reset_pin;
-    unsigned int dc_pin;
-    unsigned int cs_pin;
-    unsigned int busy_pin;
-    const unsigned char* lut;
+int  Init(const unsigned char* lut);
+void SendCommand(unsigned char command);
+void SendData(unsigned char data);
+void WaitUntilIdle(void);
+void Reset(void);
+void SetFrameMemory(
+    const unsigned char* image_buffer,
+    int x,
+    int y,
+    int image_width,
+    int image_height
+);
+void SetFrameMemory1(const unsigned char* image_buffer);
+void ClearFrameMemory(unsigned char color);
+void DisplayFrame(void);
+void Sleep(void);
 
-    void SetLut(const unsigned char* lut);
-    void SetMemoryArea(int x_start, int y_start, int x_end, int y_end);
-    void SetMemoryPointer(int x, int y);
-};
+extern unsigned int reset_pin;
+extern unsigned int dc_pin;
+extern unsigned int cs_pin;
+extern unsigned int busy_pin;
+extern const unsigned char* lut;
+
+void SetLut(const unsigned char* lut);
+void SetMemoryArea(int x_start, int y_start, int x_end, int y_end);
+void SetMemoryPointer(int x, int y);
+
 
 #endif /* EPD1IN54_H */
 

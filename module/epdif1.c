@@ -1,64 +1,98 @@
-/**
- *  @filename   :   epdif.cpp
- *  @brief      :   Implements EPD interface functions
- *                  Users have to implement all the functions in epdif.cpp
- *  @author     :   Yehui from Waveshare
- *
- *  Copyright (C) Waveshare     August 10 2017
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documnetation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to  whom the Software is
- * furished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS OR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 #include "epdif.h"
-#include <spi.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/spi/spi.h>
 
-EpdIf::EpdIf() {
-};
+extern struct spi_device *master;
+extern struct spi_board_info spi_device_info;
+extern struct spi_device *spi_device;
 
-EpdIf::~EpdIf() {
-};
+// void EpdIf::DigitalWrite(int pin, int value) {
+//     digitalWrite(pin, value);
+// }
 
-void EpdIf::DigitalWrite(int pin, int value) {
-    digitalWrite(pin, value);
+// int EpdIf::DigitalRead(int pin) {
+//     return digitalRead(pin);
+// }
+
+// void EpdIf::DelayMs(unsigned int delaytime) {
+//     delay(delaytime);
+// }
+
+int fd = 0;
+// static struct spi_ioc_transfer tr;
+
+void SpiTransfer(uint8_t data) {
+    // tr.delay_usecs = 0;
+    // uint8_t rbuf[1];
+    // tr.len = 1;
+    // tr.tx_buf =  (unsigned long)&data;
+    // tr.rx_buf =  (unsigned long)rbuf;
+
+    gpio_set_value(CS_PIN, false);
+    // TODO:
+    // SPI.transfer(data);
+    // write(fd, &data, 1);
+    // printf("Writing: %d\n", data);
+
+    spi_write(spi_device, &data, sizeof(data));
+    // if ( ioctl(fd, SPI_IOC_MESSAGE(1), &tr) < 1 )  
+    //     PDEBUG("can't send spi message\r\n"); 
+
+    gpio_set_value(CS_PIN, true);
 }
 
-int EpdIf::DigitalRead(int pin) {
-    return digitalRead(pin);
-}
+int IfInit(void) {
+    // pinMode(CS_PIN, OUTPUT);
+    // pinMode(RST_PIN, OUTPUT);
+    // pinMode(DC_PIN, OUTPUT);
+    // pinMode(BUSY_PIN, INPUT); 
+    // pullUpDnControl(BUSY_PIN, PUD_UP);
 
-void EpdIf::DelayMs(unsigned int delaytime) {
-    delay(delaytime);
-}
+    // TODO:
+    // SPI.begin();
+    // fd = open("/dev/spidev0.0", O_RDWR);
+    // SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
 
-void EpdIf::SpiTransfer(unsigned char data) {
-    digitalWrite(CS_PIN, LOW);
-    SPI.transfer(data);
-    digitalWrite(CS_PIN, HIGH);
-}
+    // static uint8_t mode = 0;
+    // mode |= SPI_LSB_FIRST;
+    // mode |= SPI_CPHA;
+    // mode |= SPI_CPOL;
 
-int EpdIf::IfInit(void) {
-    pinMode(CS_PIN, OUTPUT);
-    pinMode(RST_PIN, OUTPUT);
-    pinMode(DC_PIN, OUTPUT);
-    pinMode(BUSY_PIN, INPUT); 
+    // static uint8_t bits = 8;
+    // static uint32_t speed = 10000000;
 
-    SPI.begin();
-    SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
+    // printf("FD: %d mode %d\n", fd, mode);
+
+    // int ret;
+    // ret = ioctl(fd, SPI_IOC_WR_MODE, &mode);
+	// if (ret == -1)
+	// 	PDEBUG("can't set spi mode");
+
+	// ret = ioctl(fd, SPI_IOC_RD_MODE, &mode);
+	// if (ret == -1)
+	// 	PDEBUG("can't get spi mode");
+
+    //     ret = ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits);
+	// if (ret == -1)
+	// 	PDEBUG("can't set bits per word");
+
+	// ret = ioctl(fd, SPI_IOC_RD_BITS_PER_WORD, &bits);
+	// if (ret == -1)
+	// 	PDEBUG("can't get bits per word");
+
+	// /*
+	//  * max speed hz
+	//  */
+	// ret = ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
+	// if (ret == -1)
+	// 	PDEBUG("can't set max speed hz");
+
+	// ret = ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed);
+	// if (ret == -1)
+	// 	PDEBUG("can't get max speed hz");
+
+
+
     return 0;
 }

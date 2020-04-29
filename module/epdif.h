@@ -28,24 +28,54 @@
 #ifndef EPDIF_H
 #define EPDIF_H
 
-#include <arduino.h>
+#ifndef __KERNEL__
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <linux/spi/spidev.h>
+#include <sys/ioctl.h>
+#include <linux/types.h>
+#include <fcntl.h>
+#include <wiringPi.h>
+#include <unistd.h>
+#else
+#include <linux/types.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/spi/spi.h>
+#include <linux/gpio.h>                 // Required for the GPIO functions
+#include <linux/interrupt.h>            // Required for the IRQ code
+#endif
+
+#define AESD_DEBUG 1  //Remove comment on this line to enable debug
+
+#undef PDEBUG             /* undef it, just in case */
+#ifdef AESD_DEBUG
+#  ifdef __KERNEL__
+     /* This one if debugging is on, and kernel space */
+#    define PDEBUG(fmt, args...) printk( KERN_DEBUG "aesdchar: " fmt, ## args)
+#  else
+     /* This one for user space */
+#    define PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args)
+#  endif
+#else
+#  define PDEBUG(fmt, args...) /* not debugging: nothing */
+#endif
 
 // Pin definition
-#define RST_PIN         8
-#define DC_PIN          9
-#define CS_PIN          10
-#define BUSY_PIN        7
+#define RST_PIN         17
+#define DC_PIN          25
+#define CS_PIN          8
+#define BUSY_PIN        24
 
-class EpdIf {
-public:
-    EpdIf(void);
-    ~EpdIf(void);
+extern int fd;
 
-    static int  IfInit(void);
-    static void DigitalWrite(int pin, int value); 
-    static int  DigitalRead(int pin);
-    static void DelayMs(unsigned int delaytime);
-    static void SpiTransfer(unsigned char data);
-};
+
+int  IfInit(void);
+    // static void DigitalWrite(int pin, int value); 
+    // static int  DigitalRead(int pin);
+    // static void DelayMs(unsigned int delaytime);
+void SpiTransfer(unsigned char data);
+
 
 #endif
